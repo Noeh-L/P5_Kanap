@@ -1,56 +1,67 @@
+// Déclaration de constante afin de rendre le code plus lisible (cart[i][ID] au lieu de cart[i][0]).
 const ID = 0;
 const COLOR = 1;
 const QUANTITY = 2;
 const NOTFOUND = -1;
 
-// *****************************************************
-// AFFICHAGE DES INFOS DU PRODUITS SUR LA PAGE "PRODUCT"
-// *****************************************************
+// -----------------------------------------------------
+// AFFICHAGE DES INFOS DU PRODUITS SUR LA PAGE 'PRODUCT'
+// -----------------------------------------------------
 
-
-// 1/4 ------------------------------------------
-// va lire l'url de la page, et en extraire l'id.
+/**
+ * Cette fonction va lire l'URL de la page, et en extraire l'identifiant du produit. Si l'utilisateur
+ * retire l'identifiant de l'URL, alors il sera redirigé vers la page d'accueil.
+ * @return {String} idFromUrl - Cette fonction retourne l'identifiant du produit sous forme de chaine de caractères. 
+ */
 function getIdOfProduct() {
-    const productUrl = new URL(location.href).searchParams.get("id");
+    const idFromUrl = new URL(location.href).searchParams.get("id");
 
-    // si l'user s'amuse a retirer l'id de l'url, ça le renvoit dans page accueil
-    if (productUrl == null || productUrl == "") {
-        window.location.href = "http://127.0.0.1:5500/front/html/index.html";
+    if (idFromUrl === null || idFromUrl === "") {
+        alert("Vous allez être redirigé vers la page d'accueil.")
+        window.location.href = "./index.html";
         return;
     } else {
-        return productUrl;
+        return idFromUrl;
     };
 };
 
-// 2/4 -----------------------------------------------------
-// va chercercher les données de l'id en question seulement.
+
+/**
+ * Cette fonction va chercher dans l'API les informations du produit dont l'identifiant a été retourné dans la fonction 'getIdOfProduct()'.
+ * @param {String} productId - L'identifiant du produit.
+ * @return {Object} data - Un objet contenant les informations du produits sera retourné. 
+ */
 function fetchDataOfProduct(productId) {
     return fetch(`http://localhost:3000/api/products/${productId}`)
         .then((res) => res.json())
         .then((data) => {
             return data;
+        })
+        .catch(function(err){
+            console.log(err);
         });
 };
 
-// 3/4 ----------------------------------------------------
-// va modifier le DOM pour y insérer les infos du produits.
+
+/**
+ * Cette fonction va modifier le DOM pour y insérer les informations du produit.
+ * @param {Objet} productData - Il s'agit de l'objet retourné par la fonction 'fetchDataOfProduct()', contenant les informations du produit. 
+ */
 function displayDataOfProducts(productData) {
     document.getElementById("title").innerHTML = productData.name;
     document.getElementById("price").innerHTML = productData.price;
     document.getElementById("description").innerHTML = productData.description;
     document.querySelector(".item__img").innerHTML = `<img src="${productData.imageUrl}" alt="${productData.altTxt}" />`;
-    document.querySelector("title").innerHTML = `${productData.name}`;
 
     productData.colors.forEach(color => {
-        document.getElementById("colors").innerHTML +=
-            `
-        <option value=${color}>${color}</option>
-        `
+        document.getElementById("colors").innerHTML += `<option value=${color}>${color}</option>`;
     });
 };
 
-// 4/4 ---------------------------------------------------------------------
-// va jouer toutes les fonctions précememment créées, de manière asynchrone.
+
+/**
+ * Execution de l'ensemble des fonctions précédemment créées, de manière asynchrone.
+ */
 async function main() {
     const productId = getIdOfProduct();
     const productData = await fetchDataOfProduct(productId);
@@ -60,16 +71,72 @@ async function main() {
 main();
 
 
-//_____________________________________________________________________________________ 
-//_____________________________________________________________________________________ 
+
+// --------------------------------------------
+// Stockage des infos lors de l'ajout au panier
+// --------------------------------------------
+
+/**
+ * Récupération de l'indice d'un produit dans le panier.
+ * @param {Array} cart - Il s'agit du panier.
+ * @param {String} id - Il s'agit de l'identifiant du produit dont nous voulons l'index.
+ * @param {String} color - Il s'agit de la couleur du produit dont nous voulons l'index.
+ * @return {Number} indexOfItem - L'index du produit dans le panier ('cart') qui respecte la condition imposée.
+ */
+function getIndex(cart, id, color) {
+    let indexOfItem = null;
+    indexOfItem = cart.findIndex(item => id === item[ID] && color === item[COLOR]);
+    return indexOfItem;
+};
 
 
-// **********************************************
-// Stockage des infos lors de l'ajout au panier :
-// **********************************************
+/**
+ * Cette fonction ajoute le produit au panier seulement si ce dernier est ajoutable. C'est-à-dire
+ * si la quantité de ce dernier n'excède pas la quantité autorisée (100 exemplaires).
+ * @param {String} id
+ * @param {String} color
+ * @param {String} quantity
+ */
+function addIfAddable(id, color, quantity) { 
+    let cart = [];
+    let cartFromLS = localStorage.getItem("cart");
+    let infoOfProductAdded = [id, color.value, Number(quantity.value)];
+
+    // Si le local storage est non-vide, le(s) produit(s) déjà présent(s) dans le LS (i.e. tableau 'cartFromLS') seront stockés dans le tableau 'cart'. 
+    if (cartFromLS !== null) {
+        cart = JSON.parse(cartFromLS);          
+    };
+
+    let index = getIndex(cart, infoOfProductAdded[ID], infoOfProductAdded[COLOR]); 
+    if (index === NOTFOUND) {
+        cart.push(infoOfProductAdded);
+        localStorage.setItem("cart", JSON.stringify(cart));
+    } else if (cart[index][QUANTITY] + infoOfProductAdded[QUANTITY] > 100) {
+        let itemsLeftToBuy = 100 - cart[index][QUANTITY];
+        if (itemsLeftToBuy === 0) {
+            alert("Désolé, vous avez atteint le nombre maximal d'exemplaire achetable pour ce modèle (100 exemplaires).");
+            quantity.value = 1;
+            return;
+        } else { 
+            alert(`Seulement 100 exemplaires par modèle sont achetables. Vous pouvez encore en ajouter ${itemsLeftToBuy}.`);
+            quantity.value = itemsLeftToBuy;
+            return;
+        };
+    } else {
+        cart[index][QUANTITY] = cart[index][QUANTITY] + infoOfProductAdded[QUANTITY];
+        localStorage.setItem("cart", JSON.stringify(cart));
+    };
+
+    if (confirm("Article ajouté au panier ! Souhaitez accéder à votre panier ?")) {
+        window.location.href = "./cart.html";
+    };
+};
 
 
-// va ajouter les infos de l'user qu'on lui met en paramètre dans le local storage du navigateur.
+/**
+ * Au click sur le bouton "Ajouter au panier", cette fonction va appeler la fonction 'addIfAddable()'
+ * seuelement su l'utilisateur entre une couleur et une quantité comprise entre 1 et 100. 
+ */
 async function addToLocalStorage() {
     let id = getIdOfProduct();
     let color = document.getElementById("colors");
@@ -77,38 +144,13 @@ async function addToLocalStorage() {
     let addToCart = document.getElementById("addToCart");
 
     addToCart.addEventListener("click", () => {
-        let cart = [];  //le panier
-        let cartLS = localStorage.getItem("cart"); //ce qu'il y a dans le LS
-
-        let infoOfProductAdded = [id, color.value, Number(quantity.value)]
-
-
-        if (color.value === "" || Number(quantity.value) === 0) {
-            alert("Veuillez choisir une couleur et une quantité.");
+        if (color.value === "" || Number(quantity.value) === 0 || Number(quantity.value) < 0 || Number(quantity.value) > 100) {
+            alert("Veuillez choisir une couleur et une quantité comprise entre 1 et 100.");
+            quantity.value = 1;
             return;
         };
-
-
-        //cette conditions intérroge mon LS : si non-vide, le panier récupère les produits du LS (cartLS) et les range dans le panier (cart)
-        if (cartLS !== null) {
-            cart = JSON.parse(cartLS);          
-        };
-
-        let index = cart.findIndex(item => infoOfProductAdded[ID] === item[ID] && infoOfProductAdded[COLOR] === item[COLOR]);
-
-        // si kanap inexistant dans cart, ajoutons le, sinon augmentons seulement la quantité du kanap existant
-        if (index === NOTFOUND) {
-            cart.push(infoOfProductAdded);
-        } else {
-            cart[index][QUANTITY] = cart[index][QUANTITY] + infoOfProductAdded[QUANTITY];
-        };
-        localStorage.setItem("cart", JSON.stringify(cart));
-
-        if (confirm("Article ajouté au panier ! Souhaitez accéder à votre panier ?")) {
-            window.location.href = "./cart.html"
-        };
+        addIfAddable(id, color, quantity);      
     });
 };
-
 
 addToLocalStorage();

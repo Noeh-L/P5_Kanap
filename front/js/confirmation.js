@@ -1,29 +1,41 @@
-let orderIdElement = document.getElementById("orderId");
+let orderIdSpan = document.getElementById("orderId");
 let orderId = getIdOfProduct();
 
-displayOrderId(orderIdElement);
+displayOrderId(orderIdSpan);
 clearLocalStorage();
 
-// Récupération du numéro de commande via l'URL
+/**
+ * Récupération du numéro de commande via l'URL.
+ * @return {String} orderIdFromUrl
+ */ 
 function getIdOfProduct() {
-    const productUrl = new URL(location.href).searchParams.get("orderId");
+    const orderIdFromUrl = new URL(location.href).searchParams.get("orderId");
+    const orderIdFromSS = sessionStorage.getItem("orderId")
     
-    // si l'user s'amuse a retirer l'id de l'url, ça le renvoit dans page d'accueil
-    if (productUrl === null || productUrl === "" || productUrl === "undefined") {
-        alert("Erreur. Le numéro de commande n'a pas pu être généré. Retour à la page d'acccueil.")
-        window.location.href = "http://127.0.0.1:5500/front/html/index.html";
+    // si l'user s'amuse a retirer l'id de l'url, cela n'affectera pas l'affichage de l'orderId dans la span
+    if (orderIdFromUrl === null || orderIdFromUrl === "" || orderIdFromUrl === "undefined") {
+        window.location.href = "./confirmation.html?orderId=" + orderIdFromSS; //ne rien mettre signifie index.html automatiquement
         return;
+    } else if (orderIdFromUrl !== orderIdFromSS) {
+        return orderIdFromSS;
     } else {
-        return productUrl;
+        return orderIdFromUrl;
     };
 };
 
-// Affichage du numéro de commande
-function displayOrderId(orderIdElement) {
-    orderIdElement.textContent = orderId;
+
+/**
+ * Affichage du numéro de commande dans la page confirmation.
+ * @param {HTML Element} orderIdSpan 
+ */
+function displayOrderId(orderIdSpan) {
+    orderIdSpan.textContent = orderId;
 };
 
-// Vidage du local storage.
+
+/**
+ * Vidage du local storage. 
+ */
 function clearLocalStorage() {
-    localStorage.clear()
+    localStorage.clear();
 };
