@@ -1,12 +1,13 @@
-// Déclaration de constante afin de rendre le code plus lisible (cart[i][ID] au lieu de cart[i][0]).
+// Déclaration de constante afin de rendre le code plus lisible concernant les tableaux (ex.: cart[i][ID] au lieu de cart[i][0]).
 const ID = 0;
 const COLOR = 1;
 const QUANTITY = 2;
 const NOTFOUND = -1;
 
-// -----------------------------------------------------
-// AFFICHAGE DES INFOS DU PRODUITS SUR LA PAGE 'PRODUCT'
-// -----------------------------------------------------
+
+// -------------------------------------------------
+// AFFICHAGE DES INFOS DU PRODUITS SUR LA PAGE (1/2)
+// -------------------------------------------------
 
 /**
  * Cette fonction va lire l'URL de la page, et en extraire l'identifiant du produit. Si l'utilisateur
@@ -47,7 +48,7 @@ function fetchDataOfProduct(productId) {
  * Cette fonction va modifier le DOM pour y insérer les informations du produit.
  * @param {Objet} productData - Il s'agit de l'objet retourné par la fonction 'fetchDataOfProduct()', contenant les informations du produit. 
  */
-function displayDataOfProducts(productData) {
+function displayDataOfProduct(productData) {
     document.getElementById("title").innerHTML = productData.name;
     document.getElementById("price").innerHTML = productData.price;
     document.getElementById("description").innerHTML = productData.description;
@@ -60,21 +61,22 @@ function displayDataOfProducts(productData) {
 
 
 /**
- * Execution de l'ensemble des fonctions précédemment créées, de manière asynchrone.
+ * Récupération des informations du produit dans l'API grâce son identifiant. Et exécution
+ * de la fonction 'displayDataOfProduct()' qui va afficher les informations sur la page.
  */
-async function main() {
+async function displayProductPage() {
     const productId = getIdOfProduct();
     const productData = await fetchDataOfProduct(productId);
-    displayDataOfProducts(productData);
+    displayDataOfProduct(productData);
 };
 
-main();
+displayProductPage();
 
 
 
-// --------------------------------------------
-// Stockage des infos lors de l'ajout au panier
-// --------------------------------------------
+// ---------------------------------------------------------
+// STOCKAGE DES INFORMATIONS LORS DE L'AJOUT AU PANIER (2/2)
+// ---------------------------------------------------------
 
 /**
  * Récupération de l'indice d'un produit dans le panier.

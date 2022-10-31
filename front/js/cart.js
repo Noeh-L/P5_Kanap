@@ -1,13 +1,12 @@
-// Déclaration de constante afin de rendre le code plus lisible (cart[i][ID] au lieu de cart[i][0]).
+// Déclaration de constante afin de rendre le code plus lisible concernant les tableaux (cart[i][ID] au lieu de cart[i][0]).
 const ID = 0;
 const COLOR = 1;
 const QUANTITY = 2;
 
 
-//--------------------------------------
-// AFFICHAGE DES PRODUITS DANS LE PANIER
-//--------------------------------------
-
+//--------------------------------------------
+// AFFICHAGE DES PRODUITS DANS LE PANIER (1/5)
+//--------------------------------------------
 let cart = JSON.parse(localStorage.getItem("cart")); // Récupération du tableau du local storage (i.e. panier).
 let cartItems = document.getElementById("cart__items");
 
@@ -108,6 +107,11 @@ function displayItem(productData, color, quantity) {
 };
 
 
+
+//-------------------------------------------------------
+// SETTINGS : SUPPRESSION et CHANGEMENT DE QUANTITE (2/5)
+//-------------------------------------------------------
+
 /**
  * Suppression d'un produit du panier.
  * @param {HTML Element} deleteButton - Il s'agit du bouton sur lequel est assigné un 'addEventListenner'.
@@ -173,6 +177,11 @@ function getIndex(id, color) {
 };
 
 
+
+//---------------------------
+// AFFICHAGE DES TOTAUX (3/5)
+//---------------------------
+
 /**
  * Affichage du prix total et du nombre total d'articles dans le panier.
  * @param {Array} cart
@@ -204,7 +213,7 @@ async function displayTotalQuantityAndPrice(cart) {
 };
 
 /**
- * Cette fontion affiche "Panier vide", elle est appelé dans la fonction 'displayTotalQuantityAndPrice()'.
+ * Cette fontion affiche "Panier vide", elle est appelée dans la fonction 'displayTotalQuantityAndPrice()'.
  */
 function displayEmptyCart() {
         let emptyMsg = document.createElement("span");
@@ -214,7 +223,7 @@ function displayEmptyCart() {
 };
     
 /**
- * Execution de l'ensemble des fonctions créées. Pour chaque produit du panier, la fonction 'displayItem()' est joué.
+ * Execution de l'ensemble des fonctions créées. Pour chaque produit du panier, la fonction 'displayItem()' est jouée.
  */
 async function displayCart() {
     for (let i in cart) {
@@ -235,9 +244,9 @@ displayCart();
 
 
 
-//-----------------------------------
-// FORMULAIRE ET ENVOI DE LA COMMANDE
-//-----------------------------------
+//---------------------------------
+// VERIFICATION DU FORMULAIRE (4/5)
+//---------------------------------
 const inputs = document.querySelectorAll('input[type="text"], input[type="email"]');
 const form = document.querySelector(".cart__order__form");
 let firstName = "", lastName = "", address = "", city = "", email = "";
@@ -251,16 +260,18 @@ let isEmailValid = false;
 /**
  * Vérification de l'entrée de l'utilisateur. Les 5 fonctions suivantes vont vérifier si
  * les champs sont correctement remplis.
- * @param {String} value 
+ * @param {String} value - C'est ce que l'utilisateur écrit dans le champ.
  * @return {Boolean} isFirstNameValid - Ce bouléen nous informe le champ a été correctement rempli ou non.
  */
 function firstNameChecker(value) {
     let firstNameErrorMsg = document.getElementById("firstNameErrorMsg");
 
-    if (value.length > 0 && (value.length < 2 || value.length > 25)) {
-        firstNameErrorMsg.textContent = "Ce champs doit contenir 2 à 25 caractères."
+    if (value.length >= 0 && (value.length < 2 || value.length > 25)) {
+        firstNameErrorMsg.textContent = "Ce champs doit contenir 2 à 25 caractères.";
+        isFirstNameValid = false;
     } else if (!value.match(/^[a-z A-Z-]*$/)) {
-        firstNameErrorMsg.textContent = "Ce champs ne peut contenir que des lettres et des tirets."
+        firstNameErrorMsg.textContent = "Ce champs ne peut contenir que des lettres et des tirets.";
+        isFirstNameValid = false;
     } else {
         firstNameErrorMsg.textContent = "";
         firstName = value;
@@ -270,10 +281,12 @@ function firstNameChecker(value) {
 function lastNameChecker(value) {
     let lastNameErrorMsg = document.getElementById("lastNameErrorMsg");
 
-    if (value.length > 0 && (value.length < 2 || value.length > 25)) {
-        lastNameErrorMsg.textContent = "Ce champs doit contenir 2 à 25 caractères."
+    if (value.length >= 0 && (value.length < 2 || value.length > 25)) {
+        lastNameErrorMsg.textContent = "Ce champs doit contenir 2 à 25 caractères.";
+        isLastNameValid = false;
     } else if (!value.match(/^[a-z A-Z-]*$/)) {
-        lastNameErrorMsg.textContent = "Ce champs ne peut contenir que des lettres et des tirets."
+        lastNameErrorMsg.textContent = "Ce champs ne peut contenir que des lettres et des tirets.";
+        isLastNameValid = false;
     } else {
         lastNameErrorMsg.textContent = "";
         lastName = value;
@@ -283,10 +296,12 @@ function lastNameChecker(value) {
 function cityChecker(value) {
     let cityErrorMsg = document.getElementById("cityErrorMsg");
 
-    if (value.length > 0 && (value.length < 2 || value.length > 25)) {
+    if (value.length >= 0 && (value.length < 2 || value.length > 25)) {
         cityErrorMsg.textContent = "Ce champs doit contenir 2 à 25 caractères.";
+        isCityValid = false;
     } else if (!value.match(/^[a-z A-Z-]*$/)) {
         cityErrorMsg.textContent = "Ce champs ne peut contenir que des lettres et des tirets.";
+        isCityValid = false;
     } else {
         cityErrorMsg.textContent = "";
         city = value;
@@ -296,10 +311,12 @@ function cityChecker(value) {
 function addressChecker(value) {
     let addressErrorMsg = document.getElementById("addressErrorMsg");
 
-    if (value.length > 0 && (value.length < 5 || value.length > 100)) {
+    if (value.length >= 0 && (value.length < 5 || value.length > 100)) {
         addressErrorMsg.textContent = "Ce champs doit contenir 5 à 100 caractères.";
+        isAddressValid = false;
     } else if (!value.match(/^[a-z A-Z-0-9]*$/)) {
         addressErrorMsg.textContent = "Ce champs ne peut contenir que des chiffres, des lettres et des tirets.";
+        isAddressValid = false;
     } else {
         addressErrorMsg.textContent = "";
         address = value;
@@ -309,8 +326,9 @@ function addressChecker(value) {
 function emailChecker(value) {
     let emailErrorMsg = document.getElementById("emailErrorMsg");
 
-    if (!value.match(/^[\w_.-]+@[\w_-]+\.[a-z]{2,4}$/i) && value.length > 0) {
+    if (!value.match(/^[\w_.-]+@[\w_-]+\.[a-z]{2,4}$/i) && value.length >= 0) {
         emailErrorMsg.textContent = "Email invalide.";
+        isEmailValid = false;
     } else {
         emailErrorMsg.textContent = "";
         email = value;
@@ -318,56 +336,71 @@ function emailChecker(value) {
     };
 };
 
+ 
+/**
+ * Affectation des fonctions de vérification, créées ci-dessus, au champ respectif qu'elles doivent vérifier.
+ * @param {Array of HTML Element} inputs - Il s'agit d'un tableau de l'ensemble des inputs du formulaire.
+ */
+function formChecker(inputs) {
+    inputs.forEach(input => {
+        input.addEventListener("input", (e) => {
+            let value = e.target.value;
+            let id = e.target.id;
+            
+            switch (id) {
+                case "firstName":
+                firstNameChecker(value);
+                break;
+                    
+                case "lastName":
+                lastNameChecker(value);
+                break;
 
-// Affectation des fonctions de vérification créées ci-dessus à leur champ respectif.
-inputs.forEach(input => {
-    input.addEventListener("input", (e) => {
-        let value = e.target.value;
-        let id = e.target.id;
+                case "address":
+                addressChecker(value);
+                break;
 
-        switch (id) {
-            case "firstName":
-            firstNameChecker(value);
-            break;
-
-            case "lastName":
-            lastNameChecker(value);
-            break;
-
-            case "address":
-            addressChecker(value);
-            break;
-
-            case "city":
-            cityChecker(value);
-            break;
-
-            case "email":
-            emailChecker(value);
-            break;
-            default: null;
-        };
+                case "city":
+                cityChecker(value);
+                break;
+                
+                case "email":
+                emailChecker(value);
+                break;
+                default: null;
+            };
+        });
     });
-});
+};
+
+formChecker(inputs);
 
 
-// Au click sur le bouton "Commander !", envoyer les informations au back-end, et récupérer le numéro de commande.
-form.addEventListener("submit", (e) => {  
-    e.preventDefault();
-    let totalPrice = document.getElementById("totalPrice");
-    
-    if (cart === null || cart.length === 0) {
-        alert("Votre panier est vide !")
-        return;
-    };
-    
-    if (!isFirstNameValid || !isLastNameValid || !isAddressValid || !isCityValid || !isEmailValid) {
-        alert("Veuillez remplir correctement les champs.")
-        return;
-    };
 
-    if (!confirm(`Le total de votre commande est de ${totalPrice.textContent} €. Voulez-vous procéder au paiement ?`)) return;
-    
+//---------------------------
+// ENVOI DE LA COMMANDE (5/5)
+//---------------------------
+
+/**
+ * Récupération de l'ensemble des identifiants présents dans le panier.
+ * @return {Array} ids
+ */
+ function getIdToPost() {
+    let ids = [];
+    for (let i in cart) {
+        let id = cart[i][ID];
+        ids.push(id)
+    }
+    return ids;
+};
+
+
+/**
+ * Création de l'objet à envoyer au back-end, et envoi des données au back-end avec
+ * fetch et la méthode 'POST'.
+ */
+function sendDataToBackEnd() {
+
     // Création de l'objet à envoyer au back-end.
     const dataToPost = {
         contact: {
@@ -392,26 +425,42 @@ form.addEventListener("submit", (e) => {
         .then((res) => res.json())
         .then((data) => {
             inputs.forEach(input => {
-                input.value = "";
+                input.value = "";  // Remise à zéro du formulaire.
             });
-            sessionStorage.setItem("orderId", data.orderId)
+            sessionStorage.setItem("orderId", data.orderId); // Stockage du n° de commande pour y avoir accès au cas où l'utilisateur modifierai l'URL de la page confirmation.
             window.location.href = "./confirmation.html?orderId=" + data.orderId;
         })
         .catch(function(err){
             console.log(err);
         });
-});
+};
 
 
 /**
- * Récupération de l'ensemble des identifiants présents dans le panier.
- * @return {Array} ids
+ * Au click sur le bouton "Commander !", envoyer les informations au back-end seulement si le formulaire
+ * est correctement rempli. Puis récupération du numéro de commande pour l'injecter dans l'URL de la page
+ * confirmation.
+ * @param {HTML Element} form - Il s'agit du formulaire de la page panier à remplir avant l'envoi de la commande.
  */
-function getIdToPost() {
-    let ids = [];
-    for (let i in cart) {
-        let id = cart[i][ID];
-        ids.push(id)
-    }
-    return ids;
+function submitOrder(form) {
+    form.addEventListener("submit", (e) => {  
+        e.preventDefault();
+        let totalPrice = document.getElementById("totalPrice");
+        
+        if (cart === null || cart.length === 0) {
+            alert("Votre panier est vide !")
+            return;
+        };
+        console.log("3 : ", isFirstNameValid);
+        if (!isFirstNameValid || !isLastNameValid || !isAddressValid || !isCityValid || !isEmailValid) {
+            alert("Veuillez remplir correctement les champs.")
+            return;
+        };
+        
+        if (!confirm(`Le total de votre commande est de ${totalPrice.textContent} €. Voulez-vous procéder au paiement ?`)) return;
+        
+        sendDataToBackEnd();
+    });
 };
+
+submitOrder(form);

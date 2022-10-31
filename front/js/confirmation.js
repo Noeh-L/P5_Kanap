@@ -29,12 +29,12 @@ function getIdOfProduct() {
  * @param {HTML Element} orderIdSpan 
  */
 function displayOrderId(orderIdSpan) {
-    orderIdSpan.textContent = orderId;
+    orderIdSpan.innerHTML = `<strong>${orderId}</strong>`;
 };
 
 
 /**
- * Vidage du local storage. 
+ * Cette fonction vide le local storage. 
  */
 function clearLocalStorage() {
     localStorage.clear();
